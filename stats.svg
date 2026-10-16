@@ -1,0 +1,77 @@
+<svg width="400" height="255" viewBox="0 0 400 255" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <style>
+        /* Стили текста */
+        .title { font: 600 16px 'Segoe UI', Ubuntu, Sans-Serif; fill: #58a6ff; }
+        .lang-name { font: 600 13px 'Segoe UI', Ubuntu, Sans-Serif; fill: #c9d1d9; }
+        .lang-percent { font: 400 12px 'Segoe UI', Ubuntu, Sans-Serif; fill: #8b949e; }
+
+        /* Анимация плавного появления строк */
+        .row {
+            opacity: 0;
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        /* Анимация заполнения шкалы слева направо */
+        .progress-bar {
+            transform: scaleX(0);
+            transform-origin: 25px center;
+            animation: growBar 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        /* Пульсирующий индикатор в углу */
+        .pulse-dot {
+            fill: #3fb950;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes growBar {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+
+    <!-- Темный фон карточки с рамкой -->
+    <rect width="398" height="253" x="1" y="1" rx="12" fill="#0d1117" stroke="#30363d" stroke-width="1.5"/>
+
+    <!-- Шапка карточки -->
+    <circle cx="370" cy="32" r="5" class="pulse-dot" />
+    <text x="25" y="37" class="title">Топ языков @Thesavewill</text>
+    <line x1="25" y1="50" x2="375" y2="50" stroke="#21262d" stroke-width="1"/>
+
+    <!-- Вставляем сгенерированные полоски языков -->
+    
+        <g class="row" style="animation-delay: 0.0s">
+            <!-- Название языка и процент -->
+            <text x="25" y="75" class="lang-name">Kotlin</text>
+            <text x="375" y="75" class="lang-percent" text-anchor="end">88.6%</text>
+            
+            <!-- Серый фон прогресс-бара -->
+            <rect x="25" y="83" width="260" height="8" rx="4" fill="#21262d" />
+            
+            <!-- Цветная анимированная полоска -->
+            <rect x="25" y="83" width="230.35999999999999" height="8" rx="4" fill="#8b949e" 
+                  class="progress-bar" style="animation-delay: 0.2s" />
+        </g>
+        
+        <g class="row" style="animation-delay: 0.2s">
+            <!-- Название языка и процент -->
+            <text x="25" y="117" class="lang-name">Python</text>
+            <text x="375" y="117" class="lang-percent" text-anchor="end">11.4%</text>
+            
+            <!-- Серый фон прогресс-бара -->
+            <rect x="25" y="125" width="260" height="8" rx="4" fill="#21262d" />
+            
+            <!-- Цветная анимированная полоска -->
+            <rect x="25" y="125" width="29.64" height="8" rx="4" fill="#3572A5" 
+                  class="progress-bar" style="animation-delay: 0.4s" />
+        </g>
+        
+</svg>
