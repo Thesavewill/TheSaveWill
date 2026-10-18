@@ -342,14 +342,14 @@
             <text x="15" y="22" class="mod-title">ТОП ЯЗЫКОВ</text>
             
         <text x="15" y="38" class="lang-text">Kotlin</text>
-        <text x="135" y="38" class="lang-pct" text-anchor="end">66.6%</text>
+        <text x="135" y="38" class="lang-pct" text-anchor="end">63.9%</text>
         <rect x="15" y="41" width="120" height="5" rx="2.5" fill="#21262d" fill-opacity="0.8"/>
-        <rect x="15" y="41" width="79" height="5" rx="2.5" fill="#8b949e" class="bar-anim"/>
+        <rect x="15" y="41" width="76" height="5" rx="2.5" fill="#8b949e" class="bar-anim"/>
         
         <text x="15" y="58" class="lang-text">Python</text>
-        <text x="135" y="58" class="lang-pct" text-anchor="end">33.4%</text>
+        <text x="135" y="58" class="lang-pct" text-anchor="end">36.1%</text>
         <rect x="15" y="61" width="120" height="5" rx="2.5" fill="#21262d" fill-opacity="0.8"/>
-        <rect x="15" y="61" width="40" height="5" rx="2.5" fill="#3572A5" class="bar-anim"/>
+        <rect x="15" y="61" width="43" height="5" rx="2.5" fill="#3572A5" class="bar-anim"/>
         
         </g>
     </g>
