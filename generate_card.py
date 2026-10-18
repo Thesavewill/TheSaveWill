@@ -9,12 +9,7 @@ TOKEN = os.getenv("GITHUB_TOKEN", "")
 
 # Твой ручной стек технологий
 MY_STACK = [
-    ("Python", "#3572A5"),
-    ("Git", "#F05032"),
-    ("Docker", "#2496ED"),
-    ("Linux", "#FCC624"),
-    ("SQL", "#e38c00"),
-    ("VS Code", "#007ACC"),
+    ("Python", "#3572A5")
 ]
 
 # Цвета для автоматического парсинга языков GitHub
