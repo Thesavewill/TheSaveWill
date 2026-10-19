@@ -7,6 +7,10 @@ import requests
 USERNAME = "Thesavewill"
 TOKEN = os.getenv("GITHUB_TOKEN", "")
 
+# Размеры карточки (840px — оптимальная полная ширина для GitHub README)
+CARD_WIDTH = 840
+CARD_HEIGHT = 275
+
 # Твой ручной стек технологий
 MY_STACK = [
     ("Python", "#3572A5"),
@@ -30,6 +34,7 @@ LANG_COLORS = {
     "Java": "#b07219",
     "Shell": "#89e051",
 }
+
 
 # ==========================================
 # ПАРСИНГ ДАННЫХ С GITHUB API
@@ -107,8 +112,8 @@ def fetch_github_data(username, token=""):
 # ==========================================
 def shuriken_path(size):
     """Генерирует SVG-путь 4-конечной звезды-сюрикена с центром в (0, 0)."""
-    s = size          # Длина острых лучей
-    c = size * 0.32   # Внутренний изгиб между лучами
+    s = size
+    c = size * 0.32
     return (
         f"M 0,{-s} "
         f"Q {c},{-c} {s},0 "
@@ -119,33 +124,31 @@ def shuriken_path(size):
 
 
 def space_background():
-    """Генерирует мерцающие звезды-сюрикены и кометы с длинным шлейфом."""
+    """Генерирует мерцающие звезды-сюрикены и кометы по всей ширине карточки."""
     random.seed(42)
     stars_svg = ""
     star_colors = ["#ffffff", "#e0f2fe", "#c7d2fe", "#fae8ff"]
 
-    for _ in range(42):
-        cx = random.randint(15, 585)
-        cy = random.randint(15, 385)
+    for _ in range(55):
+        cx = random.randint(15, CARD_WIDTH - 15)
+        cy = random.randint(15, CARD_HEIGHT - 15)
         size = random.choice([2.5, 3.5, 4.5, 6.0])
         color = random.choice(star_colors)
         delay = round(random.uniform(0, 4), 2)
         dur = round(random.uniform(2.2, 4.8), 2)
         path_d = shuriken_path(size)
 
-        # Внешний <g> держит координату (cx, cy), а внутренний <path> крутится и мерцает вокруг (0,0)
         stars_svg += f"""
         <g transform="translate({cx}, {cy})">
             <path d="{path_d}" fill="{color}" class="star" style="animation-delay: {delay}s; animation-duration: {dur}s;"/>
         </g>"""
 
-    # Настройки комет: (start_x, start_y, задержка, длительность, масштаб)
     comets_data = [
-        (220, -40, 0.3, 4.2, 1.0),
-        (420, -40, 1.8, 3.6, 0.85),
-        (620, -20, 0.9, 4.8, 1.15),
-        (660, 120, 2.7, 3.9, 0.9),
-        (520, -40, 4.1, 3.5, 1.0),
+        (300, -40, 0.3, 4.2, 1.0),
+        (550, -40, 1.8, 3.6, 0.85),
+        (780, -20, 0.9, 4.8, 1.15),
+        (880, 100, 2.7, 3.9, 0.9),
+        (680, -40, 4.1, 3.5, 1.0),
     ]
     comets_svg = ""
     head_shuriken = shuriken_path(4.5)
@@ -154,18 +157,15 @@ def space_background():
         comets_svg += f"""
         <g transform="translate({cx}, {cy}) rotate(-35) scale({scale})">
             <g class="comet" style="animation-delay: {delay}s; animation-duration: {dur}s;">
-                <!-- Внешний широкий мягкий шлейф кометы -->
                 <polygon points="0,-3.5 160,0 0,3.5" fill="url(#comet-trail)" opacity="0.55"/>
-                <!-- Яркое внутреннее ядро шлейфа -->
                 <polygon points="0,-1.4 95,0 0,1.4" fill="url(#comet-core)"/>
-                <!-- Голова кометы в виде светящегося сюрикена -->
                 <path d="{head_shuriken}" fill="#ffffff" filter="url(#glow)"/>
             </g>
         </g>"""
 
     return f"""
     <g clip-path="url(#card-clip)">
-        <rect width="600" height="400" fill="url(#space-grad)"/>
+        <rect width="{CARD_WIDTH}" height="{CARD_HEIGHT}" fill="url(#space-grad)"/>
         {stars_svg}
         {comets_svg}
     </g>
@@ -173,21 +173,27 @@ def space_background():
 
 
 # ==========================================
-# МОДУЛИ КАРТОЧКИ
+# МОДУЛИ КАРТОЧКИ (Базовый слот: 180x100, шаг: 24px)
 # ==========================================
+MOD_W = 180
+GAP_X = 24
+WIDE_W = MOD_W * 2 + GAP_X  # 384px (ширина двойного модуля)
+
+
 def empty_module(x, y):
     """Пустой прозрачный модуль-заглушка для резервирования слота под большой модуль."""
     return f"""<g transform="translate({x}, {y})">
-        <rect width="150" height="100" x="0" y="0" fill="none" stroke="none"/>
+        <rect width="{MOD_W}" height="100" x="0" y="0" fill="none" stroke="none"/>
     </g>"""
 
+
 def wide_profile_module(x, y):
-    """Пример БОЛЬШОГО модуля на 2 слота (ширина: 150 + 35 + 150 = 335)."""
+    """Большой модуль на 2 слота."""
     years = datetime.now().year - DATA["created_year"]
     return f"""<g transform="translate({x}, {y})">
         <g class="module">
-            <rect width="335" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#58a6ff" stroke-width="1.5"/>
-            <circle cx="315" cy="20" r="4" class="pulse-dot"/>
+            <rect width="{WIDE_W}" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#58a6ff" stroke-width="1.5"/>
+            <circle cx="{WIDE_W - 20}" cy="20" r="4" class="pulse-dot"/>
             <text x="20" y="28" class="mod-title">ПРОФИЛЬ</text>
             <text x="20" y="60" class="mod-value-lg" fill="#ffffff">@{DATA['username']}</text>
             <text x="20" y="84" class="mod-sub">На GitHub с {DATA['created_year']} года ({years} y.)</text>
@@ -196,12 +202,12 @@ def wide_profile_module(x, y):
 
 
 def profile_module(x, y):
-    """Стандартный модуль профиля (150x100)."""
+    """Стандартный модуль профиля."""
     years = datetime.now().year - DATA["created_year"]
     return f"""<g transform="translate({x}, {y})">
         <g class="module">
-            <rect width="150" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#30363d" stroke-width="1.5"/>
-            <circle cx="130" cy="20" r="4" class="pulse-dot"/>
+            <rect width="{MOD_W}" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#30363d" stroke-width="1.5"/>
+            <circle cx="{MOD_W - 20}" cy="20" r="4" class="pulse-dot"/>
             <text x="15" y="25" class="mod-title">ПРОФИЛЬ</text>
             <text x="15" y="60" class="mod-value-md">@{DATA['username']}</text>
             <text x="15" y="80" class="mod-sub">С {DATA['created_year']} ({years} г.)</text>
@@ -213,7 +219,7 @@ def repos_module(x, y):
     """Модуль 2: Количество репозиториев."""
     return f"""<g transform="translate({x}, {y})">
         <g class="module">
-            <rect width="150" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#58a6ff" stroke-width="1.5"/>
+            <rect width="{MOD_W}" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#58a6ff" stroke-width="1.5"/>
             <text x="15" y="25" class="mod-title">РЕПОЗИТОРИИ</text>
             <text x="15" y="60" class="mod-value-lg" fill="#58a6ff">{DATA['repos_count']}</text>
             <text x="15" y="85" class="mod-sub">Публичных проектов</text>
@@ -225,7 +231,7 @@ def stars_module(x, y):
     """Модуль 3: Количество звезд."""
     return f"""<g transform="translate({x}, {y})">
         <g class="module">
-            <rect width="150" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#e3b341" stroke-width="1.5"/>
+            <rect width="{MOD_W}" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#e3b341" stroke-width="1.5"/>
             <text x="15" y="25" class="mod-title">STARS</text>
             <text x="15" y="60" class="mod-value-lg" fill="#e3b341">★ {DATA['stars']}</text>
             <text x="15" y="85" class="mod-sub">Всего получено</text>
@@ -237,8 +243,8 @@ def followers_module(x, y):
     """Модуль 4: Подписчики и подписки."""
     return f"""<g transform="translate({x}, {y})">
         <g class="module">
-            <rect width="150" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#3fb950" stroke-width="1.5"/>
-            <text x="15" y="25" class="mod-title">СООБЩЕСТВА</text>
+            <rect width="{MOD_W}" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#3fb950" stroke-width="1.5"/>
+            <text x="15" y="25" class="mod-title">СООБЩЕСТВО</text>
             <text x="15" y="60" class="mod-value-lg" fill="#3fb950">{DATA['followers']}</text>
             <text x="15" y="85" class="mod-sub">Подписок: {DATA['following']}</text>
         </g>
@@ -248,21 +254,22 @@ def followers_module(x, y):
 def top_langs_module(x, y):
     """Модуль 5: Авто-статистика языков с GitHub."""
     bars = ""
+    bar_max_w = MOD_W - 30
     for idx, (lang, pct) in enumerate(DATA["top_langs"]):
-        bar_y = 38 + idx * 20
-        bar_w = max(int((pct / 100) * 120), 4)
+        bar_y = 36 + idx * 21
+        bar_w = max(int((pct / 100) * bar_max_w), 4)
         color = LANG_COLORS.get(lang, "#8b949e")
         bars += f"""
         <text x="15" y="{bar_y}" class="lang-text">{lang}</text>
-        <text x="135" y="{bar_y}" class="lang-pct" text-anchor="end">{pct}%</text>
-        <rect x="15" y="{bar_y + 3}" width="120" height="5" rx="2.5" fill="#21262d" fill-opacity="0.8"/>
+        <text x="{MOD_W - 15}" y="{bar_y}" class="lang-pct" text-anchor="end">{pct}%</text>
+        <rect x="15" y="{bar_y + 3}" width="{bar_max_w}" height="5" rx="2.5" fill="#21262d" fill-opacity="0.8"/>
         <rect x="15" y="{bar_y + 3}" width="{bar_w}" height="5" rx="2.5" fill="{color}" class="bar-anim"/>
         """
 
     return f"""<g transform="translate({x}, {y})">
         <g class="module">
-            <rect width="150" height="230" x="0" y="0" rx="12" class="mod-bg" stroke="#a371f7" stroke-width="1.5"/>
-            <text x="15" y="22" class="mod-title">ТОП ЯЗЫКОВ</text>
+            <rect width="{MOD_W}" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#a371f7" stroke-width="1.5"/>
+            <text x="15" y="20" class="mod-title">ТОП ЯЗЫКОВ</text>
             {bars}
         </g>
     </g>"""
@@ -274,17 +281,17 @@ def stack_module(x, y):
     for idx, (tech, color) in enumerate(MY_STACK[:6]):
         col = idx % 2
         row = idx // 2
-        bx = 12 + col * 66
+        bx = 14 + col * 80
         by = 32 + row * 21
         badges += f"""
         <g transform="translate({bx}, {by})">
-            <rect x="0" y="0" width="60" height="16" rx="4" fill="#21262d" fill-opacity="0.75" stroke="{color}" stroke-width="1"/>
-            <text x="30" y="11.5" class="badge-text" text-anchor="middle">{tech}</text>
+            <rect x="0" y="0" width="72" height="16" rx="4" fill="#21262d" fill-opacity="0.75" stroke="{color}" stroke-width="1"/>
+            <text x="36" y="11.5" class="badge-text" text-anchor="middle">{tech}</text>
         </g>"""
 
     return f"""<g transform="translate({x}, {y})">
         <g class="module">
-            <rect width="150" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#f78166" stroke-width="1.5"/>
+            <rect width="{MOD_W}" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#f78166" stroke-width="1.5"/>
             <text x="15" y="22" class="mod-title">МОЙ СТЕК</text>
             {badges}
         </g>
@@ -305,7 +312,7 @@ def modularity(columns, use_modules):
     base_width = min(widths)
     base_height = min(heights)
 
-    free_space = 600 - base_width * columns
+    free_space = CARD_WIDTH - base_width * columns
     padding = free_space // (columns + 1)
 
     startX = padding
@@ -337,11 +344,11 @@ def modularity(columns, use_modules):
 
 def generate_svg(username):
     """Собирает SVG-файл с космическим фоном и CSS-анимацией."""
-    svg_template = f"""<svg width="1000" height="500" viewBox="0 0 1000 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+    svg_template = f"""<svg width="100%" viewBox="0 0 {CARD_WIDTH} {CARD_HEIGHT}" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
         <!-- Обрезка фона по скругленным краям карточки -->
         <clipPath id="card-clip">
-            <rect width="10000" height="5000" rx="12"/>
+            <rect width="{CARD_WIDTH}" height="{CARD_HEIGHT}" rx="12"/>
         </clipPath>
 
         <!-- Глубокий космический градиент -->
@@ -385,13 +392,11 @@ def generate_svg(username):
         .lang-pct {{ font: 400 9px 'Segoe UI', Ubuntu, Sans-Serif; fill: #8b949e; }}
         .badge-text {{ font: 600 9px 'Segoe UI', Ubuntu, Sans-Serif; fill: #c9d1d9; }}
 
-        /* Полупрозрачный фон модулей */
         .mod-bg {{
             fill: #161b22;
             fill-opacity: 0.62;
         }}
 
-        /* Плавное появление модулей на СВОИХ местах снизу вверх */
         .module {{
             opacity: 0;
             animation: slideUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
@@ -408,12 +413,10 @@ def generate_svg(username):
             animation: pulse 2s infinite;
         }}
 
-        /* Анимация мерцания сюрикенов строго вокруг своего центра (0, 0) */
         .star {{
             animation: twinkle infinite ease-in-out;
         }}
 
-        /* Анимация полета кометы со шлейфом */
         .comet {{
             opacity: 0;
             animation: shoot infinite ease-in;
@@ -449,7 +452,7 @@ def generate_svg(username):
             0% {{ transform: translateX(0); opacity: 0; }}
             8% {{ opacity: 1; }}
             75% {{ opacity: 1; }}
-            100% {{ transform: translateX(-750px); opacity: 0; }}
+            100% {{ transform: translateX(-950px); opacity: 0; }}
         }}
     </style>
 
@@ -460,7 +463,7 @@ def generate_svg(username):
     {modularity(columns, use_modules)}
 
     <!-- 3. Внешняя рамка карточки поверх фона -->
-    <rect width="598" height="398" x="1" y="1" rx="12" fill="none" stroke="#30363d" stroke-width="1.5"/>
+    <rect width="{CARD_WIDTH - 2}" height="{CARD_HEIGHT - 2}" x="1" y="1" rx="12" fill="none" stroke="#30363d" stroke-width="1.5"/>
 </svg>"""
 
     with open("stats.svg", "w", encoding="utf-8") as f:
@@ -471,7 +474,8 @@ def generate_svg(username):
 # ==========================================
 # ЗАПУСК И НАСТРОЙКА СЕТКИ
 # ==========================================
-columns = 3
+# 4 колонки идеально заполняют широкую карточку в 2 ряда (8 слотов)
+columns = 4
 
 use_modules = [
     wide_profile_module,
