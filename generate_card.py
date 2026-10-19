@@ -13,7 +13,6 @@ MY_STACK = [
     ("Git", "#F05032"),
     ("Docker", "#2496ED"),
     ("Linux", "#FCC624"),
-    ("SQL", "#e38c00"),
     ("VS Code", "#007ACC"),
 ]
 
@@ -338,7 +337,7 @@ def modularity(columns, use_modules):
 
 def generate_svg(username):
     """Собирает SVG-файл с космическим фоном и CSS-анимацией."""
-    svg_template = f"""<svg width="600" height="400" viewBox="0 0 600 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+    svg_template = f"""<svg width="800" height="500" viewBox="0 0 800 500" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
         <!-- Обрезка фона по скругленным краям карточки -->
         <clipPath id="card-clip">
