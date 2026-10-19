@@ -1,8 +1,8 @@
-<svg width="1000" height="500" viewBox="0 0 1000 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="500" height="500" viewBox="0 0 1000 500" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
         <!-- Обрезка фона по скругленным краям карточки -->
         <clipPath id="card-clip">
-            <rect width="600" height="400" rx="12"/>
+            <rect width="1000" height="500" rx="12"/>
         </clipPath>
 
         <!-- Глубокий космический градиент -->
@@ -306,7 +306,7 @@
             <circle cx="315" cy="20" r="4" class="pulse-dot"/>
             <text x="20" y="28" class="mod-title">ПРОФИЛЬ</text>
             <text x="20" y="60" class="mod-value-lg" fill="#ffffff">@Thesavewill</text>
-            <text x="20" y="84" class="mod-sub">На GitHub с 2022 года (4 y.)</text>
+            <text x="20" y="84" class="mod-sub">На GitHub с 2025 года (1 y.)</text>
         </g>
     </g>
 <g transform="translate(224, 25)">
@@ -316,7 +316,7 @@
         <g class="module" style="animation-delay: 0.2s">
             <rect width="150" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#58a6ff" stroke-width="1.5"/>
             <text x="15" y="25" class="mod-title">РЕПОЗИТОРИИ</text>
-            <text x="15" y="60" class="mod-value-lg" fill="#58a6ff">12</text>
+            <text x="15" y="60" class="mod-value-lg" fill="#58a6ff">5</text>
             <text x="15" y="85" class="mod-sub">Публичных проектов</text>
         </g>
     </g>
@@ -324,7 +324,7 @@
         <g class="module" style="animation-delay: 0.3s">
             <rect width="150" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#e3b341" stroke-width="1.5"/>
             <text x="15" y="25" class="mod-title">STARS</text>
-            <text x="15" y="60" class="mod-value-lg" fill="#e3b341">★ 24</text>
+            <text x="15" y="60" class="mod-value-lg" fill="#e3b341">★ 2</text>
             <text x="15" y="85" class="mod-sub">Всего получено</text>
         </g>
     </g>
@@ -332,8 +332,8 @@
         <g class="module" style="animation-delay: 0.4s">
             <rect width="150" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#3fb950" stroke-width="1.5"/>
             <text x="15" y="25" class="mod-title">СООБЩЕСТВА</text>
-            <text x="15" y="60" class="mod-value-lg" fill="#3fb950">5</text>
-            <text x="15" y="85" class="mod-sub">Подписок: 8</text>
+            <text x="15" y="60" class="mod-value-lg" fill="#3fb950">0</text>
+            <text x="15" y="85" class="mod-sub">Подписок: 1</text>
         </g>
     </g>
 <g transform="translate(411, 150)">
@@ -341,20 +341,20 @@
             <rect width="150" height="230" x="0" y="0" rx="12" class="mod-bg" stroke="#a371f7" stroke-width="1.5"/>
             <text x="15" y="22" class="mod-title">ТОП ЯЗЫКОВ</text>
             
-        <text x="15" y="38" class="lang-text">Python</text>
-        <text x="135" y="38" class="lang-pct" text-anchor="end">72.5%</text>
+        <text x="15" y="38" class="lang-text">HTML</text>
+        <text x="135" y="38" class="lang-pct" text-anchor="end">92.9%</text>
         <rect x="15" y="41" width="120" height="5" rx="2.5" fill="#21262d" fill-opacity="0.8"/>
-        <rect x="15" y="41" width="87" height="5" rx="2.5" fill="#3572A5" class="bar-anim"/>
+        <rect x="15" y="41" width="111" height="5" rx="2.5" fill="#e34c26" class="bar-anim"/>
         
-        <text x="15" y="58" class="lang-text">HTML</text>
-        <text x="135" y="58" class="lang-pct" text-anchor="end">18.0%</text>
+        <text x="15" y="58" class="lang-text">Kotlin</text>
+        <text x="135" y="58" class="lang-pct" text-anchor="end">4.4%</text>
         <rect x="15" y="61" width="120" height="5" rx="2.5" fill="#21262d" fill-opacity="0.8"/>
-        <rect x="15" y="61" width="21" height="5" rx="2.5" fill="#e34c26" class="bar-anim"/>
+        <rect x="15" y="61" width="5" height="5" rx="2.5" fill="#8b949e" class="bar-anim"/>
         
-        <text x="15" y="78" class="lang-text">CSS</text>
-        <text x="135" y="78" class="lang-pct" text-anchor="end">9.5%</text>
+        <text x="15" y="78" class="lang-text">Python</text>
+        <text x="135" y="78" class="lang-pct" text-anchor="end">2.6%</text>
         <rect x="15" y="81" width="120" height="5" rx="2.5" fill="#21262d" fill-opacity="0.8"/>
-        <rect x="15" y="81" width="11" height="5" rx="2.5" fill="#563d7c" class="bar-anim"/>
+        <rect x="15" y="81" width="4" height="5" rx="2.5" fill="#3572A5" class="bar-anim"/>
         
         </g>
     </g>

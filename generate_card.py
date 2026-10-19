@@ -341,7 +341,7 @@ def generate_svg(username):
     <defs>
         <!-- Обрезка фона по скругленным краям карточки -->
         <clipPath id="card-clip">
-            <rect width="600" height="400" rx="12"/>
+            <rect width="1000" height="500" rx="12"/>
         </clipPath>
 
         <!-- Глубокий космический градиент -->
