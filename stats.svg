@@ -316,7 +316,7 @@
         <g class="module" style="animation-delay: 0.2s">
             <rect width="150" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#58a6ff" stroke-width="1.5"/>
             <text x="15" y="25" class="mod-title">РЕПОЗИТОРИИ</text>
-            <text x="15" y="60" class="mod-value-lg" fill="#58a6ff">4</text>
+            <text x="15" y="60" class="mod-value-lg" fill="#58a6ff">5</text>
             <text x="15" y="85" class="mod-sub">Публичных проектов</text>
         </g>
     </g>
@@ -341,15 +341,20 @@
             <rect width="150" height="230" x="0" y="0" rx="12" class="mod-bg" stroke="#a371f7" stroke-width="1.5"/>
             <text x="15" y="22" class="mod-title">ТОП ЯЗЫКОВ</text>
             
-        <text x="15" y="38" class="lang-text">Kotlin</text>
-        <text x="135" y="38" class="lang-pct" text-anchor="end">63.4%</text>
+        <text x="15" y="38" class="lang-text">HTML</text>
+        <text x="135" y="38" class="lang-pct" text-anchor="end">92.9%</text>
         <rect x="15" y="41" width="120" height="5" rx="2.5" fill="#21262d" fill-opacity="0.8"/>
-        <rect x="15" y="41" width="76" height="5" rx="2.5" fill="#8b949e" class="bar-anim"/>
+        <rect x="15" y="41" width="111" height="5" rx="2.5" fill="#e34c26" class="bar-anim"/>
         
-        <text x="15" y="58" class="lang-text">Python</text>
-        <text x="135" y="58" class="lang-pct" text-anchor="end">36.6%</text>
+        <text x="15" y="58" class="lang-text">Kotlin</text>
+        <text x="135" y="58" class="lang-pct" text-anchor="end">4.4%</text>
         <rect x="15" y="61" width="120" height="5" rx="2.5" fill="#21262d" fill-opacity="0.8"/>
-        <rect x="15" y="61" width="43" height="5" rx="2.5" fill="#3572A5" class="bar-anim"/>
+        <rect x="15" y="61" width="5" height="5" rx="2.5" fill="#8b949e" class="bar-anim"/>
+        
+        <text x="15" y="78" class="lang-text">Python</text>
+        <text x="135" y="78" class="lang-pct" text-anchor="end">2.6%</text>
+        <rect x="15" y="81" width="120" height="5" rx="2.5" fill="#21262d" fill-opacity="0.8"/>
+        <rect x="15" y="81" width="4" height="5" rx="2.5" fill="#3572A5" class="bar-anim"/>
         
         </g>
     </g>
