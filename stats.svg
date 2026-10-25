@@ -362,7 +362,7 @@
             <text x="15" y="20" class="mod-title">ТОП ЯЗЫКОВ</text>
             
         <text x="15" y="36" class="lang-text">HTML</text>
-        <text x="165" y="36" class="lang-pct" text-anchor="end">92.5%</text>
+        <text x="165" y="36" class="lang-pct" text-anchor="end">92.4%</text>
         <rect x="15" y="39" width="150" height="5" rx="2.5" fill="#21262d" fill-opacity="0.8"/>
         <rect x="15" y="39" width="138" height="5" rx="2.5" fill="#e34c26" class="bar-anim"/>
         
@@ -372,7 +372,7 @@
         <rect x="15" y="60" width="6" height="5" rx="2.5" fill="#8b949e" class="bar-anim"/>
         
         <text x="15" y="78" class="lang-text">Python</text>
-        <text x="165" y="78" class="lang-pct" text-anchor="end">3.1%</text>
+        <text x="165" y="78" class="lang-pct" text-anchor="end">3.2%</text>
         <rect x="15" y="81" width="150" height="5" rx="2.5" fill="#21262d" fill-opacity="0.8"/>
         <rect x="15" y="81" width="4" height="5" rx="2.5" fill="#3572A5" class="bar-anim"/>
         
