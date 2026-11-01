@@ -1,17 +1,19 @@
 import os
 import random
+import re
 from datetime import datetime
+
 import requests
 
-# 1. Настройки
+# 1. Settings
 USERNAME = "Thesavewill"
 TOKEN = os.getenv("GITHUB_TOKEN", "")
 
-# Размеры карточки (840px — оптимальная полная ширина для GitHub README)
+# Card dimensions (840px width, 575px height for header + 3 rows)
 CARD_WIDTH = 840
-CARD_HEIGHT = 275
+CARD_HEIGHT = 575
 
-# Твой ручной стек технологий
+# Manual tech stack
 MY_STACK = [
     ("Python", "#3572A5"),
     ("Git", "#F05032"),
@@ -20,13 +22,18 @@ MY_STACK = [
     ("VS Code", "#007ACC"),
 ]
 
-# Цвета для автоматического парсинга языков GitHub
+# Manual Pinned repositories (leave empty [] for automatic parsing)
+# Format: [("repo-name", "Python", 5), ("another-repo", "HTML", 2)]
+MY_PINNED = []
+
+# GitHub language colors
 LANG_COLORS = {
     "Python": "#3572A5",
     "JavaScript": "#f1e05a",
     "TypeScript": "#3178c6",
     "HTML": "#e34c26",
     "CSS": "#563d7c",
+    "Kotlin": "#A97BFF",
     "C++": "#f34b7d",
     "C#": "#178600",
     "Go": "#00ADD8",
@@ -37,10 +44,150 @@ LANG_COLORS = {
 
 
 # ==========================================
-# ПАРСИНГ ДАННЫХ С GITHUB API
+# GITHUB API DATA FETCHING
 # ==========================================
+def fetch_contributions(username, token=""):
+    """Fetches total contributions for the last year."""
+    if token:
+        query = """
+        query($login: String!) {
+          user(login: $login) {
+            contributionsCollection {
+              contributionCalendar {
+                totalContributions
+              }
+            }
+          }
+        }
+        """
+        try:
+            resp = requests.post(
+                "https://api.github.com/graphql",
+                json={"query": query, "variables": {"login": username}},
+                headers={"Authorization": f"Bearer {token}"},
+                timeout=5,
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                return (
+                    data["data"]["user"]["contributionsCollection"][
+                        "contributionCalendar"
+                    ]["totalContributions"]
+                )
+        except Exception:
+            pass
+
+    # Fallback without token via public contributions API
+    try:
+        resp = requests.get(
+            f"https://github-contributions-api.jogruber.de/v4/{username}?y=last",
+            timeout=5,
+        )
+        if resp.status_code == 200:
+            return resp.json().get("total", {}).get("lastYear", 195)
+    except Exception:
+        pass
+
+    return 195
+
+
+def fetch_pinned_repos(username, repos_data, token=""):
+    """Fetches pinned repositories or top-2 repositories."""
+    if MY_PINNED:
+        return MY_PINNED[:2]
+
+    # 1. Via GraphQL (if token is provided)
+    if token:
+        query = """
+        query($login: String!) {
+          user(login: $login) {
+            pinnedItems(first: 2, types: REPOSITORY) {
+              nodes {
+                ... on Repository {
+                  name
+                  stargazerCount
+                  primaryLanguage {
+                    name
+                  }
+                }
+              }
+            }
+          }
+        }
+        """
+        try:
+            resp = requests.post(
+                "https://api.github.com/graphql",
+                json={"query": query, "variables": {"login": username}},
+                headers={"Authorization": f"Bearer {token}"},
+                timeout=5,
+            )
+            if resp.status_code == 200:
+                nodes = (
+                    resp.json()
+                    .get("data", {})
+                    .get("user", {})
+                    .get("pinnedItems", {})
+                    .get("nodes", [])
+                )
+                if nodes:
+                    return [
+                        (
+                            n["name"],
+                            (n.get("primaryLanguage") or {}).get("name") or "Code",
+                            n.get("stargazerCount", 0),
+                        )
+                        for n in nodes
+                    ]
+        except Exception:
+            pass
+
+    # 2. Parse pinned repositories from profile page (without token)
+    try:
+        page = requests.get(f"https://github.com/{username}", timeout=5)
+        if page.status_code == 200:
+            pinned_names = re.findall(
+                r'<span class="repo" title="([^"]+)">', page.text
+            )
+            if pinned_names and repos_data:
+                repo_map = {r["name"]: r for r in repos_data if isinstance(r, dict)}
+                pinned_list = []
+                for name in pinned_names[:2]:
+                    r = repo_map.get(name, {})
+                    pinned_list.append(
+                        (
+                            name,
+                            r.get("language") or "Code",
+                            r.get("stargazers_count", 0),
+                        )
+                    )
+                if pinned_list:
+                    return pinned_list
+    except Exception:
+        pass
+
+    # 3. Fallback: top-2 repositories by stars and update date
+    if repos_data:
+        own_repos = [r for r in repos_data if not r.get("fork")]
+        own_repos.sort(
+            key=lambda x: (x.get("stargazers_count", 0), x.get("updated_at", "")),
+            reverse=True,
+        )
+        if own_repos:
+            return [
+                (
+                    r["name"],
+                    r.get("language") or "Code",
+                    r.get("stargazers_count", 0),
+                )
+                for r in own_repos[:2]
+            ]
+
+    return [("Plotter", "Kotlin", 2), ("TheSaveWill", "Python", 0)]
+
+
 def fetch_github_data(username, token=""):
-    """Собирает всю информацию о профиле и языках за один проход."""
+    """Collects profile info, languages, contributions, and pinned repos."""
     headers = {"Authorization": f"token {token}"} if token else {}
 
     try:
@@ -55,16 +202,18 @@ def fetch_github_data(username, token=""):
     except Exception:
         user_resp = repos_resp = None
 
+    contributions = fetch_contributions(username, token)
+
     if not user_resp or user_resp.status_code != 200 or repos_resp.status_code != 200:
-        print("Лимит API или нет сети. Используются тестовые данные.")
+        print("API rate limit or offline. Using fallback data.")
         return {
             "username": username,
-            "repos_count": 12,
-            "followers": 5,
-            "following": 8,
-            "stars": 24,
-            "created_year": 2022,
-            "top_langs": [("Python", 72.5), ("HTML", 18.0), ("CSS", 9.5)],
+            "repos_count": 5,
+            "stars": 2,
+            "created_year": 2025,
+            "top_langs": [("HTML", 92.0), ("Kotlin", 4.4), ("Python", 3.7)],
+            "contributions": contributions,
+            "pinned": fetch_pinned_repos(username, [], token),
         }
 
     user_data = user_resp.json()
@@ -91,27 +240,27 @@ def fetch_github_data(username, token=""):
     ]
 
     if not top_langs:
-        top_langs = [("Нет кода", 100.0)]
+        top_langs = [("No code", 100.0)]
 
-    created_at = user_data.get("created_at", "2020-01-01")
+    created_at = user_data.get("created_at", "2025-01-01")
     created_year = int(created_at[:4])
 
     return {
         "username": user_data.get("login", username),
         "repos_count": user_data.get("public_repos", 0),
-        "followers": user_data.get("followers", 0),
-        "following": user_data.get("following", 0),
         "stars": total_stars,
         "created_year": created_year,
         "top_langs": top_langs,
+        "contributions": contributions,
+        "pinned": fetch_pinned_repos(username, repos_data, token),
     }
 
 
 # ==========================================
-# КОСМИЧЕСКИЙ ФОН (ЗВЁЗДЫ-СЮРИКЕНЫ И КОМЕТЫ)
+# SPACE BACKGROUND (SHURIKEN STARS & COMETS)
 # ==========================================
 def shuriken_path(size):
-    """Генерирует SVG-путь 4-конечной звезды-сюрикена с центром в (0, 0)."""
+    """Generates SVG path of a 4-pointed shuriken star centered at (0, 0)."""
     s = size
     c = size * 0.32
     return (
@@ -124,12 +273,12 @@ def shuriken_path(size):
 
 
 def space_background():
-    """Генерирует мерцающие звезды-сюрикены и кометы по всей ширине карточки."""
+    """Generates twinkling shuriken stars and shooting comets across the card."""
     random.seed(42)
     stars_svg = ""
     star_colors = ["#ffffff", "#e0f2fe", "#c7d2fe", "#fae8ff"]
 
-    for _ in range(55):
+    for _ in range(110):
         cx = random.randint(15, CARD_WIDTH - 15)
         cy = random.randint(15, CARD_HEIGHT - 15)
         size = random.choice([2.5, 3.5, 4.5, 6.0])
@@ -144,11 +293,12 @@ def space_background():
         </g>"""
 
     comets_data = [
-        (300, -40, 0.3, 4.2, 1.0),
-        (550, -40, 1.8, 3.6, 0.85),
-        (780, -20, 0.9, 4.8, 1.15),
-        (880, 100, 2.7, 3.9, 0.9),
-        (680, -40, 4.1, 3.5, 1.0),
+        (350, -40, 0.3, 4.2, 1.0),
+        (650, -40, 1.8, 3.6, 0.85),
+        (880, 40, 0.9, 4.8, 1.15),
+        (900, 220, 2.7, 3.9, 0.9),
+        (880, 380, 4.1, 3.5, 1.0),
+        (750, -40, 5.2, 4.4, 0.95),
     ]
     comets_svg = ""
     head_shuriken = shuriken_path(4.5)
@@ -173,206 +323,202 @@ def space_background():
 
 
 # ==========================================
-# МОДУЛИ КАРТОЧКИ (Базовый слот: 180x100, шаг: 24px)
+# CARD MODULES (NARROW LEFT & WIDE RIGHT)
 # ==========================================
-MOD_W = 180
-GAP_X = 24
-WIDE_W = MOD_W * 2 + GAP_X  # 384px (ширина двойного модуля)
-
-
-def empty_module(x, y):
-    """Пустой прозрачный модуль-заглушка для резервирования слота под большой модуль."""
-    return f"""<g transform="translate({x}, {y})">
-        <rect width="{MOD_W}" height="100" x="0" y="0" fill="none" stroke="none"/>
-    </g>"""
+LEFT_W = 190   # Narrow left column width
+RIGHT_W = 388  # Stretched right column width
+WIDE_W = 428   # Top centered profile width
+MOD_H = 110
 
 
 def wide_profile_module(x, y):
-    """Большой модуль на 2 слота."""
-    years = datetime.now().year - DATA["created_year"]
+    """Top centered profile module."""
+    years = max(1, datetime.now().year - DATA["created_year"])
     return f"""<g transform="translate({x}, {y})">
         <g class="module">
-            <rect width="{WIDE_W}" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#58a6ff" stroke-width="1.5"/>
-            <circle cx="{WIDE_W - 20}" cy="20" r="4" class="pulse-dot"/>
-            <text x="20" y="28" class="mod-title">ПРОФИЛЬ</text>
-            <text x="20" y="60" class="mod-value-lg" fill="#ffffff">@{DATA['username']}</text>
-            <text x="20" y="84" class="mod-sub">На GitHub с {DATA['created_year']} года ({years} y.)</text>
-        </g>
-    </g>"""
-
-
-def profile_module(x, y):
-    """Стандартный модуль профиля."""
-    years = datetime.now().year - DATA["created_year"]
-    return f"""<g transform="translate({x}, {y})">
-        <g class="module">
-            <rect width="{MOD_W}" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#30363d" stroke-width="1.5"/>
-            <circle cx="{MOD_W - 20}" cy="20" r="4" class="pulse-dot"/>
-            <text x="15" y="25" class="mod-title">ПРОФИЛЬ</text>
-            <text x="15" y="60" class="mod-value-md">@{DATA['username']}</text>
-            <text x="15" y="80" class="mod-sub">С {DATA['created_year']} ({years} г.)</text>
+            <rect width="{WIDE_W}" height="{MOD_H}" x="0" y="0" rx="12" class="mod-bg" stroke="#58a6ff" stroke-width="1.5"/>
+            <circle cx="{WIDE_W - 22}" cy="22" r="4.5" class="pulse-dot"/>
+            <text x="22" y="30" class="mod-title">PROFILE</text>
+            <text x="22" y="65" class="mod-value-lg" fill="#ffffff">@{DATA['username']}</text>
+            <text x="22" y="90" class="mod-sub">On GitHub since {DATA['created_year']} ({years} y.)</text>
         </g>
     </g>"""
 
 
 def repos_module(x, y):
-    """Модуль 2: Количество репозиториев."""
+    """Left Column 1: Public repositories count."""
     return f"""<g transform="translate({x}, {y})">
         <g class="module">
-            <rect width="{MOD_W}" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#58a6ff" stroke-width="1.5"/>
-            <text x="15" y="25" class="mod-title">РЕПОЗИТОРИИ</text>
-            <text x="15" y="60" class="mod-value-lg" fill="#58a6ff">{DATA['repos_count']}</text>
-            <text x="15" y="85" class="mod-sub">Публичных проектов</text>
+            <rect width="{LEFT_W}" height="{MOD_H}" x="0" y="0" rx="12" class="mod-bg" stroke="#58a6ff" stroke-width="1.5"/>
+            <text x="16" y="28" class="mod-title">REPOSITORIES</text>
+            <text x="16" y="66" class="mod-value-lg" fill="#58a6ff">{DATA['repos_count']}</text>
+            <text x="16" y="92" class="mod-sub">Public projects</text>
         </g>
     </g>"""
 
 
 def stars_module(x, y):
-    """Модуль 3: Количество звезд."""
+    """Left Column 2: Total stars count."""
     return f"""<g transform="translate({x}, {y})">
         <g class="module">
-            <rect width="{MOD_W}" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#e3b341" stroke-width="1.5"/>
-            <text x="15" y="25" class="mod-title">STARS</text>
-            <text x="15" y="60" class="mod-value-lg" fill="#e3b341">★ {DATA['stars']}</text>
-            <text x="15" y="85" class="mod-sub">Всего получено</text>
+            <rect width="{LEFT_W}" height="{MOD_H}" x="0" y="0" rx="12" class="mod-bg" stroke="#e3b341" stroke-width="1.5"/>
+            <text x="16" y="28" class="mod-title">STARS</text>
+            <text x="16" y="66" class="mod-value-lg" fill="#e3b341">★ {DATA['stars']}</text>
+            <text x="16" y="92" class="mod-sub">Total earned</text>
         </g>
     </g>"""
 
 
-def followers_module(x, y):
-    """Модуль 4: Подписчики и подписки."""
+def contributions_module(x, y):
+    """Left Column 3: Contributions in the last year."""
     return f"""<g transform="translate({x}, {y})">
         <g class="module">
-            <rect width="{MOD_W}" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#3fb950" stroke-width="1.5"/>
-            <text x="15" y="25" class="mod-title">СООБЩЕСТВО</text>
-            <text x="15" y="60" class="mod-value-lg" fill="#3fb950">{DATA['followers']}</text>
-            <text x="15" y="85" class="mod-sub">Подписок: {DATA['following']}</text>
+            <rect width="{LEFT_W}" height="{MOD_H}" x="0" y="0" rx="12" class="mod-bg" stroke="#39d353" stroke-width="1.5"/>
+            <text x="16" y="28" class="mod-title">ACTIVITY</text>
+            <text x="16" y="66" class="mod-value-lg" fill="#39d353">{DATA['contributions']}</text>
+            <text x="16" y="92" class="mod-sub">Contributions last year</text>
         </g>
     </g>"""
 
 
 def top_langs_module(x, y):
-    """Модуль 5: Авто-статистика языков с GitHub."""
+    """Right Column 1: Stretched top languages module (borderless)."""
     bars = ""
-    bar_max_w = MOD_W - 30
+    bar_max_w = RIGHT_W - 40
     for idx, (lang, pct) in enumerate(DATA["top_langs"]):
-        bar_y = 36 + idx * 21
+        bar_y = 40 + idx * 23
         bar_w = max(int((pct / 100) * bar_max_w), 4)
         color = LANG_COLORS.get(lang, "#8b949e")
         bars += f"""
-        <text x="15" y="{bar_y}" class="lang-text">{lang}</text>
-        <text x="{MOD_W - 15}" y="{bar_y}" class="lang-pct" text-anchor="end">{pct}%</text>
-        <rect x="15" y="{bar_y + 3}" width="{bar_max_w}" height="5" rx="2.5" fill="#21262d" fill-opacity="0.8"/>
-        <rect x="15" y="{bar_y + 3}" width="{bar_w}" height="5" rx="2.5" fill="{color}" class="bar-anim"/>
+        <text x="20" y="{bar_y}" class="lang-text">{lang}</text>
+        <text x="{RIGHT_W - 20}" y="{bar_y}" class="lang-pct" text-anchor="end">{pct}%</text>
+        <rect x="20" y="{bar_y + 4}" width="{bar_max_w}" height="5" rx="2.5" fill="#21262d" fill-opacity="0.8"/>
+        <rect x="20" y="{bar_y + 4}" width="{bar_w}" height="5" rx="2.5" fill="{color}" class="bar-anim"/>
         """
 
     return f"""<g transform="translate({x}, {y})">
         <g class="module">
-            <rect width="{MOD_W}" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#a371f7" stroke-width="1.5"/>
-            <text x="15" y="20" class="mod-title">ТОП ЯЗЫКОВ</text>
+            <rect width="{RIGHT_W}" height="{MOD_H}" x="0" y="0" rx="12" class="mod-bg" stroke="none"/>
+            <text x="20" y="22" class="mod-title">TOP LANGUAGES</text>
             {bars}
         </g>
     </g>"""
 
 
 def stack_module(x, y):
-    """Модуль 6: Выставление своего стека (плашки-бейджи 2x3)."""
+    """Right Column 2: Stretched tech stack module (borderless)."""
     badges = ""
+    badge_w = (RIGHT_W - 52) // 2  # 168px per badge
     for idx, (tech, color) in enumerate(MY_STACK[:6]):
         col = idx % 2
         row = idx // 2
-        bx = 14 + col * 80
-        by = 32 + row * 21
+        bx = 20 + col * (badge_w + 12)
+        by = 34 + row * 23
         badges += f"""
         <g transform="translate({bx}, {by})">
-            <rect x="0" y="0" width="72" height="16" rx="4" fill="#21262d" fill-opacity="0.75" stroke="{color}" stroke-width="1"/>
-            <text x="36" y="11.5" class="badge-text" text-anchor="middle">{tech}</text>
+            <rect x="0" y="0" width="{badge_w}" height="18" rx="4" fill="#21262d" fill-opacity="0.75" stroke="{color}" stroke-width="1"/>
+            <text x="{badge_w / 2}" y="12.5" class="badge-text" text-anchor="middle">{tech}</text>
         </g>"""
 
     return f"""<g transform="translate({x}, {y})">
         <g class="module">
-            <rect width="{MOD_W}" height="100" x="0" y="0" rx="12" class="mod-bg" stroke="#f78166" stroke-width="1.5"/>
-            <text x="15" y="22" class="mod-title">МОЙ СТЕК</text>
+            <rect width="{RIGHT_W}" height="{MOD_H}" x="0" y="0" rx="12" class="mod-bg" stroke="none"/>
+            <text x="20" y="23" class="mod-title">MY STACK</text>
             {badges}
         </g>
     </g>"""
 
 
+def pinned_module(x, y):
+    """Right Column 3: Stretched pinned repositories module (borderless)."""
+    items_svg = ""
+    card_w = RIGHT_W - 40
+    for idx, (name, lang, stars) in enumerate(DATA["pinned"][:2]):
+        py = 33 + idx * 34
+        color = LANG_COLORS.get(lang, "#8b949e")
+        short_name = name if len(name) <= 32 else name[:30] + "…"
+        items_svg += f"""
+        <g transform="translate(20, {py})">
+            <rect width="{card_w}" height="28" rx="6" fill="#21262d" fill-opacity="0.75" stroke="#30363d" stroke-width="1"/>
+            <circle cx="14" cy="14" r="4" fill="{color}"/>
+            <text x="26" y="17.5" class="lang-text">{short_name}</text>
+            <text x="{card_w - 12}" y="17.5" class="lang-pct" fill="#e3b341" text-anchor="end">★ {stars}</text>
+        </g>"""
+
+    return f"""<g transform="translate({x}, {y})">
+        <g class="module">
+            <rect width="{RIGHT_W}" height="{MOD_H}" x="0" y="0" rx="12" class="mod-bg" stroke="none"/>
+            <text x="20" y="23" class="mod-title">PINNED</text>
+            {items_svg}
+        </g>
+    </g>"""
+
+
 # ==========================================
-# ДВИЖОК СЕТКИ
+# LAYOUT ENGINE
 # ==========================================
-def modularity(columns, use_modules):
-    """Расположение модулей на SVG-карточке по столбцам."""
-    widths = [
-        int(m(0, 0).split('width="')[1].split('"')[0]) for m in use_modules
-    ]
-    heights = [
-        int(m(0, 0).split('height="')[1].split('"')[0]) for m in use_modules
-    ]
-    base_width = min(widths)
-    base_height = min(heights)
-
-    free_space = CARD_WIDTH - base_width * columns
-    padding = free_space // (columns + 1)
-
-    startX = padding
-    startY = 25
-
-    stepX = base_width + padding
-    stepY = base_height + 25
-
+def modularity(header_module, grid_modules):
+    """Positions the centered header and asymmetric left/right columns."""
     result_svg = ""
 
-    for i in range(len(use_modules)):
-        column = i % columns
-        row = i // columns
+    # 1. Top centered PROFILE module
+    header_x = (CARD_WIDTH - WIDE_W) // 2  # 206px
+    header_y = 25
+    header_svg = header_module(header_x, header_y).replace(
+        'class="module"', 'class="module" style="animation-delay: 0.0s"'
+    )
+    result_svg += header_svg + "\n"
 
-        x = startX + column * stepX
-        y = startY + row * stepY
+    # 2. Asymmetric columns: left moved rightwards (x=80) and wide right (x=436)
+    left_x = 110
+    right_x = CARD_WIDTH - 32 - RIGHT_W  # 436px
+    start_y = 165
+    step_y = MOD_H + 25  # 135px vertical step
 
-        mod_svg = use_modules[i](x, y)
-        delay = round(i * 0.1, 2)
+    for i, mod_func in enumerate(grid_modules):
+        col = i % 2
+        row = i // 2
+
+        x = left_x if col == 0 else right_x
+        y = start_y + row * step_y
+
+        mod_svg = mod_func(x, y)
+        delay = round((i + 1) * 0.1, 2)
         mod_svg = mod_svg.replace(
             'class="module"',
             f'class="module" style="animation-delay: {delay}s"',
         )
-
         result_svg += mod_svg + "\n"
 
     return result_svg
 
 
 def generate_svg(username):
-    """Собирает SVG-файл с космическим фоном и CSS-анимацией."""
+    """Builds the final SVG file with space background and CSS animations."""
     svg_template = f"""<svg width="100%" viewBox="0 0 {CARD_WIDTH} {CARD_HEIGHT}" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
-        <!-- Обрезка фона по скругленным краям карточки -->
         <clipPath id="card-clip">
             <rect width="{CARD_WIDTH}" height="{CARD_HEIGHT}" rx="12"/>
         </clipPath>
 
-        <!-- Глубокий космический градиент -->
         <linearGradient id="space-grad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stop-color="#04060a"/>
             <stop offset="50%" stop-color="#0a101d"/>
             <stop offset="100%" stop-color="#140c29"/>
         </linearGradient>
 
-        <!-- Внешний градиент шлейфа кометы -->
         <linearGradient id="comet-trail" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stop-color="#58a6ff" stop-opacity="0.95"/>
             <stop offset="40%" stop-color="#a371f7" stop-opacity="0.45"/>
             <stop offset="100%" stop-color="#150d2a" stop-opacity="0"/>
         </linearGradient>
 
-        <!-- Яркий внутренний градиент шлейфа -->
         <linearGradient id="comet-core" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
             <stop offset="50%" stop-color="#79c0ff" stop-opacity="0.6"/>
             <stop offset="100%" stop-color="#58a6ff" stop-opacity="0"/>
         </linearGradient>
 
-        <!-- Свечение головы кометы -->
         <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
             <feGaussianBlur stdDeviation="2.2" result="blur"/>
             <feMerge>
@@ -384,13 +530,13 @@ def generate_svg(username):
 
     <style>
         .mod-title {{ font: 700 10px 'Segoe UI', Ubuntu, Sans-Serif; fill: #8b949e; letter-spacing: 0.8px; }}
-        .mod-value-lg {{ font: 700 26px 'Segoe UI', Ubuntu, Sans-Serif; }}
+        .mod-value-lg {{ font: 700 28px 'Segoe UI', Ubuntu, Sans-Serif; }}
         .mod-value-md {{ font: 700 16px 'Segoe UI', Ubuntu, Sans-Serif; fill: #c9d1d9; }}
         .mod-sub {{ font: 400 11px 'Segoe UI', Ubuntu, Sans-Serif; fill: #8b949e; }}
         
-        .lang-text {{ font: 600 10px 'Segoe UI', Ubuntu, Sans-Serif; fill: #c9d1d9; }}
-        .lang-pct {{ font: 400 9px 'Segoe UI', Ubuntu, Sans-Serif; fill: #8b949e; }}
-        .badge-text {{ font: 600 9px 'Segoe UI', Ubuntu, Sans-Serif; fill: #c9d1d9; }}
+        .lang-text {{ font: 600 10.5px 'Segoe UI', Ubuntu, Sans-Serif; fill: #c9d1d9; }}
+        .lang-pct {{ font: 400 9.5px 'Segoe UI', Ubuntu, Sans-Serif; fill: #8b949e; }}
+        .badge-text {{ font: 600 9.5px 'Segoe UI', Ubuntu, Sans-Serif; fill: #c9d1d9; }}
 
         .mod-bg {{
             fill: #161b22;
@@ -404,7 +550,7 @@ def generate_svg(username):
 
         .bar-anim {{
             transform: scaleX(0);
-            transform-origin: 15px center;
+            transform-origin: 20px center;
             animation: grow 1.2s ease-out forwards;
         }}
 
@@ -452,39 +598,38 @@ def generate_svg(username):
             0% {{ transform: translateX(0); opacity: 0; }}
             8% {{ opacity: 1; }}
             75% {{ opacity: 1; }}
-            100% {{ transform: translateX(-950px); opacity: 0; }}
+            100% {{ transform: translateX(-1100px); opacity: 0; }}
         }}
     </style>
 
-    <!-- 1. Космический фон со звездами-сюрикенами и кометами -->
+    <!-- 1. Space background -->
     {space_background()}
 
-    <!-- 2. Сетка модулей -->
-    {modularity(columns, use_modules)}
+    <!-- 2. Modules grid -->
+    {modularity(header_module, grid_modules)}
 
-    <!-- 3. Внешняя рамка карточки поверх фона -->
+    <!-- 3. Outer card border -->
     <rect width="{CARD_WIDTH - 2}" height="{CARD_HEIGHT - 2}" x="1" y="1" rx="12" fill="none" stroke="#30363d" stroke-width="1.5"/>
 </svg>"""
 
     with open("stats.svg", "w", encoding="utf-8") as f:
         f.write(svg_template)
-    print("Карточка успешно сохранена в файл stats.svg!")
+    print("Card successfully saved to stats.svg!")
 
 
 # ==========================================
-# ЗАПУСК И НАСТРОЙКА СЕТКИ
+# RUN & CONFIGURE GRID
 # ==========================================
-# 4 колонки идеально заполняют широкую карточку в 2 ряда (8 слотов)
-columns = 4
+header_module = wide_profile_module
 
-use_modules = [
-    wide_profile_module,
-    empty_module,
-    repos_module,
-    stars_module,
-    followers_module,
-    top_langs_module,
-    stack_module,
+# 3 rows x 2 columns (Narrow Left, Stretched Borderless Right)
+grid_modules = [
+    repos_module,          # Row 1, Left
+    top_langs_module,      # Row 1, Right
+    stars_module,          # Row 2, Left
+    stack_module,          # Row 2, Right
+    contributions_module,  # Row 3, Left
+    pinned_module,         # Row 3, Right
 ]
 
 if __name__ == "__main__":
