@@ -510,9 +510,9 @@
             <text x="20" y="22" class="mod-title">TOP LANGUAGES</text>
             
         <text x="20" y="40" class="lang-text">HTML</text>
-        <text x="368" y="40" class="lang-pct" text-anchor="end">92.0%</text>
+        <text x="368" y="40" class="lang-pct" text-anchor="end">91.7%</text>
         <rect x="20" y="44" width="348" height="5" rx="2.5" fill="#21262d" fill-opacity="0.8"/>
-        <rect x="20" y="44" width="320" height="5" rx="2.5" fill="#e34c26" class="bar-anim"/>
+        <rect x="20" y="44" width="319" height="5" rx="2.5" fill="#e34c26" class="bar-anim"/>
         
         <text x="20" y="63" class="lang-text">Kotlin</text>
         <text x="368" y="63" class="lang-pct" text-anchor="end">4.4%</text>
@@ -520,9 +520,9 @@
         <rect x="20" y="67" width="15" height="5" rx="2.5" fill="#A97BFF" class="bar-anim"/>
         
         <text x="20" y="86" class="lang-text">Python</text>
-        <text x="368" y="86" class="lang-pct" text-anchor="end">3.7%</text>
+        <text x="368" y="86" class="lang-pct" text-anchor="end">3.9%</text>
         <rect x="20" y="90" width="348" height="5" rx="2.5" fill="#21262d" fill-opacity="0.8"/>
-        <rect x="20" y="90" width="12" height="5" rx="2.5" fill="#3572A5" class="bar-anim"/>
+        <rect x="20" y="90" width="13" height="5" rx="2.5" fill="#3572A5" class="bar-anim"/>
         
         </g>
     </g>
@@ -565,7 +565,7 @@
         <g class="module" style="animation-delay: 0.5s">
             <rect width="190" height="110" x="0" y="0" rx="12" class="mod-bg" stroke="#39d353" stroke-width="1.5"/>
             <text x="16" y="28" class="mod-title">ACTIVITY</text>
-            <text x="16" y="66" class="mod-value-lg" fill="#39d353">195</text>
+            <text x="16" y="66" class="mod-value-lg" fill="#39d353">194</text>
             <text x="16" y="92" class="mod-sub">Contributions last year</text>
         </g>
     </g>
@@ -575,12 +575,6 @@
             <text x="20" y="23" class="mod-title">PINNED</text>
             
         <g transform="translate(20, 33)">
-            <rect width="348" height="28" rx="6" fill="#21262d" fill-opacity="0.75" stroke="#30363d" stroke-width="1"/>
-            <circle cx="14" cy="14" r="4" fill="#A97BFF"/>
-            <text x="26" y="17.5" class="lang-text">Plotter</text>
-            <text x="336" y="17.5" class="lang-pct" fill="#e3b341" text-anchor="end">★ 2</text>
-        </g>
-        <g transform="translate(20, 67)">
             <rect width="348" height="28" rx="6" fill="#21262d" fill-opacity="0.75" stroke="#30363d" stroke-width="1"/>
             <circle cx="14" cy="14" r="4" fill="#3572A5"/>
             <text x="26" y="17.5" class="lang-text">TheSaveWill</text>
