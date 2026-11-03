@@ -500,7 +500,7 @@
         <g class="module" style="animation-delay: 0.1s">
             <rect width="190" height="110" x="0" y="0" rx="12" class="mod-bg" stroke="#58a6ff" stroke-width="1.5"/>
             <text x="16" y="28" class="mod-title">REPOSITORIES</text>
-            <text x="16" y="66" class="mod-value-lg" fill="#58a6ff">5</text>
+            <text x="16" y="66" class="mod-value-lg" fill="#58a6ff">6</text>
             <text x="16" y="92" class="mod-sub">Public projects</text>
         </g>
     </g>
@@ -565,7 +565,7 @@
         <g class="module" style="animation-delay: 0.5s">
             <rect width="190" height="110" x="0" y="0" rx="12" class="mod-bg" stroke="#39d353" stroke-width="1.5"/>
             <text x="16" y="28" class="mod-title">ACTIVITY</text>
-            <text x="16" y="66" class="mod-value-lg" fill="#39d353">197</text>
+            <text x="16" y="66" class="mod-value-lg" fill="#39d353">201</text>
             <text x="16" y="92" class="mod-sub">Contributions last year</text>
         </g>
     </g>
