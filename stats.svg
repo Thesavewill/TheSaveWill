@@ -500,7 +500,7 @@
         <g class="module" style="animation-delay: 0.1s">
             <rect width="190" height="110" x="0" y="0" rx="12" class="mod-bg" stroke="#58a6ff" stroke-width="1.5"/>
             <text x="16" y="28" class="mod-title">REPOSITORIES</text>
-            <text x="16" y="66" class="mod-value-lg" fill="#58a6ff">6</text>
+            <text x="16" y="66" class="mod-value-lg" fill="#58a6ff">7</text>
             <text x="16" y="92" class="mod-sub">Public projects</text>
         </g>
     </g>
@@ -510,14 +510,14 @@
             <text x="20" y="22" class="mod-title">TOP LANGUAGES</text>
             
         <text x="20" y="40" class="lang-text">HTML</text>
-        <text x="368" y="40" class="lang-pct" text-anchor="end">89.7%</text>
+        <text x="368" y="40" class="lang-pct" text-anchor="end">89.5%</text>
         <rect x="20" y="44" width="348" height="5" rx="2.5" fill="#21262d" fill-opacity="0.8"/>
-        <rect x="20" y="44" width="312" height="5" rx="2.5" fill="#e34c26" class="bar-anim"/>
+        <rect x="20" y="44" width="311" height="5" rx="2.5" fill="#e34c26" class="bar-anim"/>
         
         <text x="20" y="63" class="lang-text">Python</text>
-        <text x="368" y="63" class="lang-pct" text-anchor="end">4.8%</text>
+        <text x="368" y="63" class="lang-pct" text-anchor="end">5.0%</text>
         <rect x="20" y="67" width="348" height="5" rx="2.5" fill="#21262d" fill-opacity="0.8"/>
-        <rect x="20" y="67" width="16" height="5" rx="2.5" fill="#3572A5" class="bar-anim"/>
+        <rect x="20" y="67" width="17" height="5" rx="2.5" fill="#3572A5" class="bar-anim"/>
         
         <text x="20" y="86" class="lang-text">Kotlin</text>
         <text x="368" y="86" class="lang-pct" text-anchor="end">4.3%</text>
@@ -565,7 +565,7 @@
         <g class="module" style="animation-delay: 0.5s">
             <rect width="190" height="110" x="0" y="0" rx="12" class="mod-bg" stroke="#39d353" stroke-width="1.5"/>
             <text x="16" y="28" class="mod-title">ACTIVITY</text>
-            <text x="16" y="66" class="mod-value-lg" fill="#39d353">210</text>
+            <text x="16" y="66" class="mod-value-lg" fill="#39d353">211</text>
             <text x="16" y="92" class="mod-sub">Contributions last year</text>
         </g>
     </g>
