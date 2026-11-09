@@ -565,7 +565,7 @@
         <g class="module" style="animation-delay: 0.5s">
             <rect width="190" height="110" x="0" y="0" rx="12" class="mod-bg" stroke="#39d353" stroke-width="1.5"/>
             <text x="16" y="28" class="mod-title">ACTIVITY</text>
-            <text x="16" y="66" class="mod-value-lg" fill="#39d353">211</text>
+            <text x="16" y="66" class="mod-value-lg" fill="#39d353">210</text>
             <text x="16" y="92" class="mod-sub">Contributions last year</text>
         </g>
     </g>
